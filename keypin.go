@@ -3,23 +3,16 @@ package main
 
 import (
 	"os"
+	"io"
 	"fmt"
 	"flag"	
 	"bufio"
+	"regexp"
 	"strings"
-	//"net/http"
+	"net/http"
 )
 
 
-
-//User arguments - [User Input]:
-var domain = flag.String("d", "", "Domain to test")
-var path = flag.String("p", "", "Path to bypass")
-var bypass = flag.String("b", "all", `Bypass technique to use`)
-var header = flag.String("hc", "", "Header/cookie to add in requests")
-var method = flag.String("m", "GET", "Method to use")
-var agent = flag.String("a", "/home/kali/project/keypin/db/rua.txt", "user agent to use")
-var output = flag.String("o", "", "Save output")
 
 //Random user agent file & list:
 var rua_file, rua_err = os.Open("/home/kali/project/keypin/db/rua.txt")
@@ -29,71 +22,114 @@ var lst_rua = make([]string,0)
 
 //Run keypin with it's linked functions:
 func main() {
+
 	//Banner Design & option(parse) display ("-h, --help"):
-	banner()
-	flag.Parse()
+	ShowBanner()
 	
-	//Configure KeyPin:
-	rua()
+	flag.Usage = func() {
+   	fmt.Fprintf(os.Stderr, "\nUsage: ./keypin -t <domain> -p <path> [OPTIONS] ...\n\n");
+	
+	fmt.Println(`
+Keypin tries to bypass forbidden, unauthorized, unathenticated directories inside a domain.
+It do so by using diffirent techniques by manupulating Headers, Methods, Verbs, Extensions etc.
 
-	config()
+	`)
+	
+	flag.PrintDefaults()
+	fmt.Println("\n")
+	}
+
+	//UserOptions (Arguments):
+	var url string;		flag.StringVar(&url, "u", "", "URL to test on [Ex: \"https://www.target.com\"]")
+	var path string;	flag.StringVar(&path, "p", "/", "path to bypass [Ex: \"/admin\"]")
+	var method string;	flag.StringVar(&method, "m", "GET", "HTTP method to use [Ex: \"GET\", \"POST\", \"HEAD\" ...]")
+    var output string;	flag.StringVar(&output, "o", "keypin.txt", "output result")
 
 
+	flag.Parse()
+
+	
+	//Checking that "url" & "path" is parsed otherwise exit:
+	if path == "/" {
+		fmt.Println("Use: ./keypin -u <Domain> -p <Path>... ")
+		fmt.Print(":x: Path was not detected. Do you want to continue? [y/n]: ")
+
+		var input_noPath string
+    	fmt.Scanln(&input_noPath)
+		if input_noPath != "y" && input_noPath != "Y" {
+			os.Exit(0)
+		}
+	}
+	
+
+	//Checking that the url has a HTTP protocol:
+	valid_url, _ := regexp.MatchString(`.*://`, url)
+	if valid_url == false {
+		fmt.Println("HTTP protocol is needed for:", url)
+		os.Exit(0)
+	}
 
 
-	//Enable user input args to all functions that will run in "main":
+	//Show the configured setup before starting:
+	config(url, path, method, output)
 
 
-
-	//Setting up the request client:
-	/*
+	//Client configure & request command setup:
 	client := http.Client{}
-	req, err := http.NewRequest("GET", domain, nil)
+	req, _ := http.NewRequest(method, url+path, nil)
 
 
-	//If there is a newwork error:
-	if err != nil {
-		fmt.Println("error:", err)
+	//Starting the bypass process:
+	for i := 1; i < 5; i++ {
+		
+		//If there is a newwork error:
+		resp, req_err := client.Do(req)
+
+		if req_err != nil {
+			fmt.Println("Error:", req_err)
+			os.Exit(0)
+		}
+
+		contentSize, _ := io.ReadAll(resp.Body)
+		size := len(contentSize)
+
+		fmt.Printf(":%v: %v%v - [ %v | %v | %v ]\n", i, url, path, method, resp.StatusCode, size)
 	}
 
-	/*
-	for i := 0; i < 10; i++ {
-		fmt.Printf(":%v:\n", i)
-	}
-	*/
-
-	fmt.Println(":: Process done.")
+	fmt.Println("\n:: Process done.")
 }
 
 
 //Banner design:
-func banner() {
+func ShowBanner() {
 	fmt.Println(`
-	
-	[BANNER]
-	
-- Version: v1.0
-- Author: Brumens
-	`)
+				        ___
+				      ,/ __¨\
+	 __  __     ______     __  __ \\ \´\ \	 __     __   __    
+	/\ \/ /    /\  ___\   /\ \_\ \ \\_¨¨ /  /\ \   /\ '-.\ \   
+	\ \  _'-.  \ \  __\   \ \___, \ ¨”\\ \  \ \ \  \ \ \-.  \  
+	 \ \_\ \_\  \ \_____\  \/\_____\   \\ l  \ \_\  \ \_\\'\_\ 
+	  \/_/\/_/   \/_____/   \/_____/    \\ l  \/_/   \/_/ \/_/ 
+					     \\_l
+					      ¨¨¨
+				Version: v1.0
+				Author: Brumens
+`)
 }
 
 
-func config() {
+func config(url, path, method, output string) {
 
-	fmt.Print("x")
 
 	//Information & user configure output:
-	fmt.Print(strings.Repeat("-", 60),"\n",
-	"· Bypass: \n",
-	"· Target: \n",
-	"· Path: \n",
-	"· Threads: \n",
-	"· Timeout: \n",
-	"· Delay: \n",
-	"· Header: \n",
-	"· Cookie: \n",
-	"· User-Agents: [",len(lst_rua),"] Lines\n",
-	strings.Repeat("-", 60),"\n")
+	fmt.Print(strings.Repeat("_", 78),"\n",
+	"\n\r· url\t\t:\t", url,
+	"\n\r· Path:\t\t:\t", path,
+	"\n\r· Method:\t:\t", method,
+	"\n\r· Output:\t:\t", output,
+	"\n\r· User-Agents:\t:\t",len(lst_rua),
+	"\n",
+	strings.Repeat("_", 78),"\n\n")
 
 }
 
@@ -107,7 +143,7 @@ func rua() {
         lst_rua = append(lst_rua, scanner.Text())
     }
 }
-
+/*
 
 //HTTP protocol bypass:
 func protocol() {
@@ -116,13 +152,13 @@ func protocol() {
 
 	fmt.Print("wordlist >>", wordlist[3])
 
-	fmt.Println("::", *domain)
+	fmt.Println("::", *url)
 
 }
 
 //HTTP verb bypass:
 func extension() {
-	fmt.Println("::", *domain)
+	fmt.Println("::", *url)
 
 }
 
