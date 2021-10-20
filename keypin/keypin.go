@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 )
 
-/*===============[Global variables that all functions take data from]===============*/
+/*===============[Global static variables]===============*/
 
 //Colors:
 var WHITE = "\033[0m"
@@ -40,7 +40,7 @@ type storage struct {
 }
 
 //Store the list & variables:
-func storage_declare() *storage {
+func storage_define() *storage {
 	st := &storage{}
 
 	st.payload = "" 
@@ -79,18 +79,21 @@ func parse() *options{
 	return opt
 }
 
-/*
-===============[This is the main function where all other functions gets executed]===============
-							Run KeyPin with it's linked functions:							   */
+
+
+/*===============[This is the main function where all other functions gets executed]===============*/
+//Run KeyPin with it's linked functions:
 func main() {
 	opt := parse()
-	st := storage_declare()
+	st := storage_define()
 	
 
 	//Banner Design & option(parse) display ("-h, --help"):
 	ShowBanner()
 	flagUsage()
 
+	list_name := []string{}
+	setup_lists(list_name, st)
 
 	//Check so everything is proberly configured by the user:
 	if opt.url == "" {
@@ -122,7 +125,6 @@ func main() {
 	}
 
 	//Display the configuration to the user:
-	rua(st)
 	config(opt, st)
 	
 
@@ -131,7 +133,7 @@ func main() {
 	
 	/* ( Verbs ) */
 	if opt.method == "all" {
-		//verbs(opt)
+		//request(opt, st)
 	}
 
 
@@ -173,18 +175,15 @@ func config(opt *options, st *storage) {
 
 
 	//Information & user configure output:
-	fmt.Print(strings.Repeat("_", 70),"\n")
-
-	fmt.Printf(`
-· url                  : %v
-· Path:                : %v
-· Method:              : %v
-· Output:              : %v
-· User-Agents:         : %v
-`, opt.url, opt.path, opt.method, opt.output, len(st.lst_rua))
-
-	fmt.Print(strings.Repeat("_", 70),"\n")
-
+	fmt.Print("\n",strings.Repeat("_", 64),"\n")
+	fmt.Printf(""+
+	"\r· url                  : %v\n"+
+	"\r· Path:                : %v\n"+
+	"\r· Method:              : %v\n"+
+	"\r· Output:              : %v\n"+
+	"\r· User-Agents:         : %v\n"+
+	"", opt.url, opt.path, opt.method, opt.output, len(st.lst_rua))
+	fmt.Print(strings.Repeat("_", 64),"\n")
 }
 
 
@@ -214,52 +213,49 @@ func request(opt *options, st *storage) {
 }
 
 // [] User agent to list:
-func rua(st *storage) {
-	file_rua, _ := os.Open("db/rua.txt")
+func setup_lists(list_name []string, st *storage) {
 
-    //Adding all lines(user-agents) to a list - [Random-Agent]:
-	scanner := bufio.NewScanner(file_rua)    
-    for scanner.Scan() {
-        st.lst_rua = append(st.lst_rua, scanner.Text())
-    }
+
+	lst_files := []string{"rua.txt", "path_bypass.txt", "verb_bypass.txt"}
+
+	for i := 0; i < len(lst_files); i++ {
+
+		file_input, _ := os.Open("db/"+lst_files[i])
+		scanner := bufio.NewScanner(file_input)
+
+   		for scanner.Scan() {
+        	list_name = append(list_name, scanner.Text())
+    	}
+
+    	switch nr := i; nr {
+			case 0: 
+				st.lst_rua = list_name
+			case 1:
+				st.lst_paths = list_name
+			case 2:
+				st.lst_verbs = list_name
+    	}
+    	list_name = nil
+	}
 }
 
 
 // [] HTTP protocol bypass: Ex: "PUT, GET, POST, GeT, PoSt"
 func protocol() {
-	fmt.Print("→ Protocol function running")
-	wordlist := make([]int, 1, 2)
-
-	fmt.Print("wordlist >>", wordlist[3])
-
-	//fmt.Println("::", *url)
 
 }
 
 func verbs(opt *options, st *storage) {
 
-	file_verb, _ := os.Open("db/path_bypass.txt")
-	
-	//Gather all verb methods and add them to list:
-	scanner := bufio.NewScanner(file_verb)    
-    for scanner.Scan() {
-        st.lst_verbs = append(st.lst_verbs, scanner.Text())
-    }
 }
 
 
 
 // [] Paths bypass: Ex "/./admin, ///admin///"
 func paths(st *storage) {
-	file_paths, _ := os.Open("db/path_bypass.txt")
-	//Configure all path payloads with the given path:
-	scanner := bufio.NewScanner(file_paths)
-    for scanner.Scan() {
-        st.lst_paths = append(st.lst_paths, scanner.Text())
-    }
+
 }
 
-/*
 
 //Extension bypass Ex: "admin?.css":
 func extension() {
@@ -280,7 +276,7 @@ func cachePosioning() {
 func ports() {
 
 }
-*/
+
 
 // [] Banner design:
 func ShowBanner() {
@@ -294,6 +290,5 @@ func ShowBanner() {
     \/_/\/_/   \/_____/   \/_____/     %v\\ l%v  \/_/   \/_/ \/_/ 
                                         %v\\_l%v
                          Version: v1.0   %v¨¨¨%v
-                         Author: Brumens
-`, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE)
+                         Author: Brumens`, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE, ORANGE, WHITE)
 }
