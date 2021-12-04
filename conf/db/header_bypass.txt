@@ -1,0 +1,24 @@
+##[host headers]
+host __whitelist__
+x-host
+http-forwarded __whitelist__
+x-forwarded __whitelist__
+x-forwarded-for __whitelist__
+x-forwarded-host __whitelist__
+referer
+##[ip spoof]
+x-proxyuser-ip __whitelist__
+x-remote-addr __whitelist__
+x-remote-ip __whitelist__
+x-client-ip __whitelist__
+x-custom-ip-authorization __whitelist__
+x-originating-ip __whitelist__
+##[rewrite headers]
+x-original-url __path__
+x-rewrite-url __path__
+##[underscore headers]
+http_forwarded __whitelist__
+http_client_ip __whitelist__
+http_forwarded_for __whitelist__
+http_x_forwarded __whitelist__
+http_x_forwarded_for __whitelist__
