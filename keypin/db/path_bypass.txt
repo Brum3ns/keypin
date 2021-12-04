@@ -1,8 +1,0 @@
-.%FUZZ%
-/.%FUZZ%
-%FUZZ%/
-//%FUZZ%//
-/%FUZZ%
-//%FUZZ%
-///%FUZZ%
-////%FUZZ%
