@@ -1,5 +1,6 @@
 # keypin
-Keypin is a lightweight and highly customization tool, built to bypass forbidden pages. It supports the most common bypass techniques and also adjust theses techniques for a result. 
+Keypin is a lightweight and highly customization tool, built to bypass forbidden pages. It supports the most common bypass techniques and also combined/adjust theses techniques for ore deep testing. 
+
 ## Features
 
 * Friendly configuration and customaziation
