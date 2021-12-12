@@ -1,9 +1,5 @@
 # keypin
 
-## Install
-```
-go get
-```
 ## Features
 
 * Friendly configuration and customaziation
@@ -11,8 +7,36 @@ go get
 * Adjust techniques depending on it's behavior for better detection 
 * Bypass cached pages to avoid false negatives
 
+## Installation
+
+Using Golang
+```
+go get
+```
+Using Git
+```
+git clone https://github.com/Brum3ns/keypin.git
+```
+
 ## Usage
 
 
 
-## Example
+## Example of usage
+
+Simple bypass mode
+```
+./keypin -u https://www.example.com -p /admin
+```
+Attacking with custom Verb (HTTP method) and static header
+```
+./keypin -u https://www.example.com -p /admin -H "X-Forward-For: 127.0.0.1" -m GET
+```
+Attacking a forbidden website on the root without a path
+```
+./keypin -u https://www.example.com
+```
+Debugging mode
+```
+./keypin -u https://www.example.com -p /admin -v
+```
