@@ -102,6 +102,7 @@ type storage struct {
 	lst_paths []string
 	lst_headers []string
 	lst_protocols []string
+	lst_name []string
 	
 	//List with filters & techniques:
 	//lst_technique []string
@@ -136,7 +137,157 @@ type options struct {
 
 }
 
+type Client struct {
+	
+	client *http.Client
+}
 
+
+//Run KeyPin with it's linked functions:
+func main() {
+
+	ShowBanner()
+	fmt.Println("Stay ethical. You are responsible for your actions.\r\n",
+	"\rthe creator of the tool is not responsible for any misuse or damage.\n\r")
+
+	client := client()
+	opt := parse()
+	st := storage_define()
+
+	//Craft list for each technique that contains it's payloads:
+	setup_lists(st)
+
+
+	//Display the configuration to the user:
+	config_Check(opt, st)
+
+
+	//Calculate the process time:
+	ProcessTime_Start := time.Now()
+
+
+	//Combine techniqes into one list with diffierent sets:
+	techq := make(map[int][]string)
+	techq[0] = st.lst_verbs
+	techq[1] = st.lst_paths
+	techq[2] = st.lst_headers
+
+	T := 0
+
+	var wg sync.WaitGroup
+
+	//Check if all verbs should be used or a static provided by the user:
+	if opt.method == "all" {
+		//Check valid HTTP methods (Verbs) in general for the domain:
+		for vb := 0; vb != len(techq[0]); vb++ {
+			opt.method = techq[0][vb]
+			st.payload = opt.method
+
+			//Add general valid HTTP methods to future scans:
+			if request(client, opt, st) == "valid" {
+				fmt.Print(st.verbose, " :: \033[36mGeneral valid HTTP method found\033[0m\n")
+				st.lst_validMethod = append(st.lst_validMethod, st.payload)
+			}else {continue}
+		}
+
+	//If user choice Verb only use that one:
+	}else {
+		st.lst_validMethod = append(st.lst_validMethod, opt.method)		
+	}
+
+	//Run a loop with all techniques: "techq[T]":
+	for; T != 3; T++ {
+		 
+		//Rung all payloads that are in the specific file for the technique:
+		for payload := 0; payload != len(techq[T]); payload ++ {
+			time.Sleep(time.Duration(opt.delay))
+			wg.Add(1)
+
+			go func() {
+				defer wg.Done()
+
+				//Bypass techniques:
+				switch; T {
+					case 0: //(1) Verbs
+						opt.method = techq[T][payload]
+						st.payload = opt.method
+						st.path = opt.path
+
+						if request(client, opt, st) == "valid" {
+
+							fmt.Print(st.verbose, " :: \033[1;32mBypassed\033[0m\n")
+						}else {return}		
+
+					case 1: //(2) Paths, Extensions & Cache Posioning
+						st.path = techq[T][payload]
+						st.path = strings.Replace(st.path, "__PATH__", opt.path, -1)
+						st.payload = st.path
+						/*
+						if cacheTechnique == true {
+							st.path += 
+							st.payload += 
+						}*/
+
+					case 2: //(5) Headers
+						st.path = opt.path
+						st.header = techq[T][payload]
+						st.header = strings.Replace(st.header, "__PATH__", opt.path, -1)
+						st.payload = st.header
+				}
+
+
+				//Valid HTTP methods to test techniques and payloads with:
+				if T != 0 {
+					for _, opt.method = range(st.lst_validMethod) {
+
+						//Call the "Request" function & ignore failed response that either was block/timeout by the target:
+						if request(client, opt, st) == "valid" {
+
+							fmt.Print(st.verbose, " :: \033[1;32mBypassed\033[0m\n")
+						}else {continue}
+					}
+				}
+			}()
+			//ADD "SELECT CASE" STATMENT END A RETURN VALUE FOR THE FUNCTION REQUST TO CHECK X4.
+			wg.Wait()
+		}
+	}
+
+
+
+	// Calculate finish time
+	var ProcessTime_End time.Duration = time.Since(ProcessTime_Start)
+
+	//Process finished, Display summary verbose information:
+	fmt.Println("\n:: Process finished successfully.")
+	fmt.Printf("Requests: [%v] - [%v]s\n", st.count, ProcessTime_End.Seconds()) // <=====[FIX TIME]
+}
+
+
+/*================================[Functions]================================*/
+
+//Client setup
+func client() *http.Client {
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
+		Timeout:	10 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:        1000,
+			MaxIdleConnsPerHost: 500,
+			MaxConnsPerHost:     500,
+			DialContext: (&net.Dialer{
+				Timeout: 10 * time.Second,
+			}).DialContext,
+			TLSHandshakeTimeout: 10 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+				Renegotiation: tls.RenegotiateOnceAsClient,
+			},
+		},
+	}
+	return client
+}
 
 //Store the list & variables:
 func storage_define() *storage {
@@ -163,6 +314,7 @@ func storage_define() *storage {
 	st.lst_verbs = []string{}
 	st.lst_paths = []string{}
 	st.lst_protocols = []string{}
+	st.lst_name = []string{}
 
 	//st.lst_technique = []string{"Verb method", "Protocol", "Path", "Extension", "Header", "Cache Posioning"} 
 	st.lst_blacklist =[]int{403, 401, 404, 400}
@@ -212,156 +364,6 @@ func flagUsage() {
 	}
 }
 
-
-//Run KeyPin with it's linked functions:
-func main() {
-
-	ShowBanner()
-	fmt.Println("Stay ethical. You are responsible for your actions.\r\n",
-	"\rthe creator of the tool is not responsible for any misuse or damage.\n\r")
-
-	opt := parse()
-	st := storage_define()
-
-
-	//Setup the network client:
-	timeout := time.Duration(opt.timeout)* 1000000
-	delay := time.Duration(opt.delay)* 1000000
-
-	tr := &http.Transport{
-		MaxIdleConns:      30,
-		IdleConnTimeout:   time.Second,
-		DisableKeepAlives: false,
-		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
-		DialContext: (&net.Dialer{
-			Timeout:   time.Second * 10,
-			KeepAlive: time.Second,
-		}).DialContext,
-	}
-
-	
-	re := func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
-	}
-	
-	client := &http.Client{
-		Transport:     tr,
-		CheckRedirect: re,
-		Timeout:       timeout,
-	}
-
-
-	//Craft list for each technique that contains it's payloads:
-	list_name := []string{}
-	setup_lists(list_name, st)
-
-
-	//Display the configuration to the user:
-	config_Check(opt, st)
-
-
-	//Calculate the process time:
-	ProcessTime_Start := time.Now()
-
-
-	//Combine techniqes into one list with diffierent sets:
-	techq := make(map[int][]string)
-	techq[0] = st.lst_verbs
-	techq[1] = st.lst_paths
-	techq[2] = st.lst_headers
-
-	T := 0
-
-	var wg sync.WaitGroup
-
-	//Check if all verbs should be used or a static provided by the user:
-	if opt.method == "all" {
-		//Check valid HTTP methods (Verbs) in general for the domain:
-		for vb := 0; vb != len(techq[0]); vb++ {
-			opt.method = techq[0][vb]
-			st.payload = opt.method
-
-			//Add general valid HTTP methods to future scans:
-			if request(client, opt, st) == "valid" {
-				fmt.Print(st.verbose, " :: \033[36mGeneral valid HTTP method found\033[0m\n")
-				st.lst_validMethod = append(st.lst_validMethod, st.payload)
-			}else {continue}
-		}
-
-	//If user choice Verb only use that one:
-	}else {
-		st.lst_validMethod = append(st.lst_validMethod, opt.method)		
-	}
-
-	//Run a loop with all techniques: "techq[T]":
-	for; T != 3; T++ {
-		 
-		//Rung all payloads that are in the specific file for the technique:
-		for payload := 0; payload != len(techq[T]); payload ++ {
-			time.Sleep(delay)
-			wg.Add(1)
-
-			go func() {
-				defer wg.Done()
-
-				//Bypass techniques:
-				switch; T {
-					case 0: //(1) Verbs
-						opt.method = techq[T][payload]
-						st.payload = opt.method
-						st.path = opt.path
-
-						if request(client, opt, st) == "valid" {
-
-							fmt.Print(st.verbose, " :: \033[1;32mBypassed\033[0m\n")
-						}else {return}		
-
-					case 1: //(2) Paths, Extensions & Cache Posioning
-						st.path = techq[T][payload]
-						st.path = strings.Replace(st.path, "__PATH__", opt.path, -1)
-						st.payload = st.path
-						/*
-						if cacheTechnique == true {
-							st.path += 
-							st.payload += 
-						}*/
-
-					case 2: //(5) Headers
-						st.path = opt.path
-						st.header = techq[T][payload]
-						st.header = strings.Replace(st.header, "__PATH__", opt.path, -1)
-						st.payload = st.header
-				}
-
-
-				//Valid HTTP methods to test techniques and payloads with:
-				if T != 0 {
-					for _, opt.method = range(st.lst_validMethod) {
-
-						//Call the "Request" function & ignore failed response that either was block/timeout by the target:
-						if request(client, opt, st) == "valid" {
-
-							fmt.Print(st.verbose, " :: \033[1;32mBypassed\033[0m\n")
-						}else {continue}
-					}
-				}
-			}()
-			wg.Wait()
-		}
-	}
-
-
-
-	// Calculate finish time
-	var ProcessTime_End time.Duration = time.Since(ProcessTime_Start)
-
-	//Process finished, Display summary verbose information:
-	fmt.Println("\n:: Process finished successfully.")
-	fmt.Printf("Requests: [%v] - [%v]s\n", st.count, ProcessTime_End.Seconds()) // <=====[FIX TIME]
-}
-
-
-/*================================[Functions]================================*/
 
 
 // [] Requesting the target:
@@ -490,7 +492,7 @@ func config_Check(opt *options, st *storage) {
 
 
 // [] User agent to list:
-func setup_lists(list_name []string, st *storage) {
+func setup_lists(st *storage) {
 
 	lst_files := []string{"rua.txt", "path_bypass.txt", "verb_bypass.txt", "headers_bypass.txt"}
 
@@ -501,22 +503,22 @@ func setup_lists(list_name []string, st *storage) {
 
    		for scanner.Scan() {
    			if scanner.Text() != "" && scanner.Text() != "\n" && scanner.Text()[0:2] != "##" {
-        		list_name = append(list_name, scanner.Text())
+        		st.lst_name = append(st.lst_name, scanner.Text())
    			}
     	}
 
     	switch nr := i; nr {
 			case 0: 
-				st.lst_rua = list_name
+				st.lst_rua = st.lst_name
 			case 1:
-				st.lst_paths = list_name
+				st.lst_paths = st.lst_name
 			case 2:
-				st.lst_verbs = list_name
+				st.lst_verbs = st.lst_name
 			case 3:
-				st.lst_headers = list_name
+				st.lst_headers = st.lst_name
     	}
 
-    	list_name = nil
+    	st.lst_name = nil
 	}
 }
 
