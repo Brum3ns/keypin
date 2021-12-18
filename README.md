@@ -62,3 +62,9 @@ git clone https://github.com/Brum3ns/keypin.git
 ./keypin -u https://www.example.com -p /admin -v
 
 ```
+
+#Configure
+HTTP method, headers + *value*, path can be found in the path: "db/conf/"
+Values can be added or replaced without facing any issue.
+
+If you do add a header that is taking use of the URI path (*www.example.com/<here>*). Example the header "X-Original-URL" take use of this. By adding "*__PATH__*" to it's value, KeyPin will automaticlly replace "*__PATH__*" with the given path you specify in the run command (option: "*-p*").
