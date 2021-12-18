@@ -26,7 +26,7 @@ git clone https://github.com/Brum3ns/keypin.git
 
 ```
 
-# Usage
+## Usage
 
 **Keypin help menu. Displays all options that are available**
 ```
@@ -63,7 +63,7 @@ git clone https://github.com/Brum3ns/keypin.git
 
 ```
 
-#Configure
+## Configure
 HTTP method, headers + *value*, path can be found in the path: "db/conf/"
 Values can be added or replaced without facing any issue.
 
