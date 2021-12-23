@@ -1,4 +1,4 @@
-![GitHub Light](img/keypinLogo_w.png)
+![GitHub Light](img/KeypinLogo.png)
 Keypin is a lightweight and highly customization tool, built to bypass forbidden pages. It supports the most common bypass techniques and also combined/adjust theses techniques for ore deep testing. 
 
 
