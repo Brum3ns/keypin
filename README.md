@@ -16,8 +16,7 @@ Keypin is a lightweight and highly customization tool, built to bypass forbidden
 # Installation
 
 ```
-go install github.com/Brum3ns/keypin@latest
-cd /usr/share && git clone https://github.com/Brum3ns/keypin.git
+go install github.com/Brum3ns/keypin@latest && cd /usr/share && git clone https://github.com/Brum3ns/keypin.git
 ```
 
 ## Usage
