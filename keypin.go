@@ -506,7 +506,6 @@ func setup_lists(st *storage) {
 	for i := 0; i < len(lst_files); i++ {
 
 		file_input, _ := os.Open(path+lst_files[i])
-		fmt.Println(file_input)
 		scanner := bufio.NewScanner(file_input)
 
    		for scanner.Scan() {
