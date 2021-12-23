@@ -498,7 +498,7 @@ func setup_lists(st *storage) {
 
 	for i := 0; i < len(lst_files); i++ {
 
-		file_input, _ := os.Open("conf/db/"+lst_files[i])
+		file_input, _ := os.Open("usr/share/keypin/conf/db/"+lst_files[i])
 		scanner := bufio.NewScanner(file_input)
 
    		for scanner.Scan() {
