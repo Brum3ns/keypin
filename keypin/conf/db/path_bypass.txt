@@ -1,0 +1,59 @@
+##===[This wordlist can be configured to and your own technique that KeyPin will run]===##
+## 
+## The "-p" option inside KeyPin will add an "/" as prefix If you add a "/" in your payload.
+## Example: "/__PATH__" will be rendered as: "//__PATH__". Do not add a "/" if you don't want more than one
+## at the beggining. KeyPin will ignore "newlines" unless it's URL encoded. "%0a" or "\n". It will also 
+## ignore if you add duel "##" as this is a comment. But it will not ignore this if something comes first.
+## Example: "/##__PATH__" or "#__PATH__" is both allowed and will be proceed.
+## 
+## * Comments ==> "##" - ![Only works if it's at the beginning]!
+## * Path to bypass ==> "__PATH__"
+
+
+##[Standard acess]
+__PATH__
+__PATH__/
+
+
+##[Dot slash]
+.__PATH__
+.__PATH__/
+/.__PATH__
+//.__PATH__
+/.__PATH__//
+//.__PATH__///
+
+##[Hashtag technique]
+__PATH__#
+__PATH__%23
+__PATH__%2523
+__PATH__#/
+__PATH__%23/
+__PATH__%2523/
+/__PATH__#
+/__PATH__%23
+/__PATH__%2523
+//__PATH__#
+//__PATH__%23
+//__PATH__%2523
+
+##[Multi slash]
+__PATH__/
+/__PATH__//
+//__PATH__///
+//__PATH__
+
+##[Colon/SemiColon]
+
+
+##[Extension with a possible valid file at end]
+__PATH__?
+__PATH__?&
+__PATH__?qwhwds=5423
+__PATH__?index.html
+__PATH__?index.php
+__PATH__?home.html
+__PATH__?home.php
+
+
+##[Mixed techniques all in one (Dot, Hashrag, Extension...)]
