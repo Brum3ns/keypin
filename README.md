@@ -14,18 +14,10 @@ Keypin is a lightweight and highly customization tool, built to bypass forbidden
 - v1.0 Keypin works with all it's main options and does it's job as a 403/401 bypass tool.
 
 # Installation
-Using Golang
+
 ```
 go install github.com/Brum3ns/keypin@latest
-cd /usr/share && git clone
-
-```
-Using Git
-
-```
-git clone https://github.com/Brum3ns/keypin.git
-chmod +x keypin.go
-./keypin.go
+cd /usr/share && git clone https://github.com/Brum3ns/keypin.git
 ```
 
 ## Usage
