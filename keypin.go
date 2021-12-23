@@ -58,6 +58,7 @@ import (
 	"bufio"
 	"regexp"
 	"strings"
+	"os/exec"
 	"strconv"
 	"net/http"
 	"crypto/tls"
@@ -493,16 +494,19 @@ func config_Check(opt *options, st *storage) {
 
 // [] User agent to list:
 func setup_lists(st *storage) {
+
 	//Execute "whoami" to get the user name and to make a $HOME variable
 	WHOAMI, _ := exec.Command("whoami").Output()
 	path := fmt.Sprintf("/home/%v/.config/keypin/conf/db/", string(WHOAMI))
 	path = strings.Replace(path, "\n", "", 1)
-	
+
+
 	lst_files := []string{"rua.txt", "path_bypass.txt", "verb_bypass.txt", "headers_bypass.txt"}
 
 	for i := 0; i < len(lst_files); i++ {
 
 		file_input, _ := os.Open(path+lst_files[i])
+		fmt.Println(file_input)
 		scanner := bufio.NewScanner(file_input)
 
    		for scanner.Scan() {
