@@ -433,7 +433,7 @@ func request(client *http.Client, opt *options, st *storage) string{
 	if opt.verbose != true {
 		fmt.Printf("%v \033[\033[K\r",st.verbose)
 	}else{
-		fmt.Printf(st.verbose)
+		fmt.Printf("%v\n", st.verbose)
 	}
 
 	return "done"
