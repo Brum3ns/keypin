@@ -16,7 +16,7 @@ Keypin is a lightweight and highly customization tool, built to bypass forbidden
 # Installation
 Using Golang
 ```
-go get <I haven't figure this out yet :P>
+go install github.com/Brum3ns/keypin@latest
 
 ```
 Using Git
@@ -24,6 +24,7 @@ Using Git
 ```
 git clone https://github.com/Brum3ns/keypin.git
 chmod +x keypin.go
+./keypin.go
 ```
 
 ## Usage
